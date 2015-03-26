@@ -1,5 +1,5 @@
 /* 
- * File:   CoOccurrTest.hxx
+ * File:   CoOccurTest.hxx
  * Author: Erik Corona
  *
  */
