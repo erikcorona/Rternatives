@@ -7,19 +7,20 @@
 #ifndef COOCCURTEST_HXX
 #define	COOCCURTEST_HXX
 
-#include <algorithm>
 #include <boost/math/special_functions/gamma.hpp>
-#include <limits>
-#include <map>
-#include <math.h>
-#include <vector>
 
 using namespace boost::math;
 
 namespace fastR{
+    
+constexpr long double percentChangeCutoff = 0.00000001;
+
 class CoOccurTest
 {
 public:
+    
+    friend std::ostream& operator<< (std::ostream &out, CoOccurTest &cPoint);
+    
     /**
      * number of times category 1 occurs is a+c
      * number of times category 2 occurs is a+b
@@ -40,12 +41,12 @@ public:
      * @param c number of times category 1 co-occurs with anything that isn't category 2
      * @param d number of times neither category 1 nor category 2 occur
      */
-    CoOccurTest(const long a, const long b, const long c, const long d) :
+    CoOccurTest(const long double a, const long double b, const long double c, const long double d) :
             aa{a > d ? d : a},
             bb{b},
             cc{c},
             dd{a > d ? a : d},
-            k{lgamma((double)a + b + 1) + lgamma((double)c + d + 1) + lgamma((double)a + c + 1) + lgamma((double)b + d + 1) - lgamma((double)a + b + c + d + 1)},
+            k{lgamma(a + b + 1) + lgamma(c + d + 1) + lgamma(a + c + 1) + lgamma(b + d + 1) - lgamma(a + b + c + d + 1)},
             a_d_switched{a > d}
     {
     }
@@ -64,7 +65,7 @@ public:
         do {
             ap = configuration_pvalue(a--, b++, c++, d--);
             if (ap <= pval) sig += ap;
-        } while (ap / (sig - ap) > 0.00000001 && a >= 0 && d >= 0);
+        } while (ap / (sig - ap) > percentChangeCutoff && a >= 0 && d >= 0);
 
         a = aa+1, b = bb-1, c = cc-1, d = dd+1;
         
@@ -77,7 +78,7 @@ public:
             do {
                 ap = configuration_pvalue(a++, b--, c--, d++);
                 if (ap < pval) sig += ap;
-            } while (ap / (sig - ap) > 0.00000001 && b >= 0 && c >= 0);
+            } while (ap / (sig - ap) > percentChangeCutoff && b >= 0 && c >= 0);
         }
         
         return sig;
@@ -97,7 +98,7 @@ public:
         do {
             ap = configuration_pvalue(a--, b++, c++, d--);
             sig += ap;
-        } while (ap / (sig - ap) > 0.00000001 && a >= 0 && d >= 0);
+        } while (ap / (sig - ap) > percentChangeCutoff && a >= 0 && d >= 0);
         return sig;
     }
 
@@ -110,12 +111,12 @@ public:
     {
         long double sig{0}, ap;
 
-        long a = aa, b = bb, c = cc, d = dd;
+        long double a = aa, b = bb, c = cc, d = dd;
 
         do {
             ap = configuration_pvalue(a++, b--, c--, d++);
             sig += ap;
-           } while (ap / (sig - ap) > 0.00000001 && b >= 0 && c >= 0);
+           } while (ap / (sig - ap) > percentChangeCutoff && b >= 0 && c >= 0);
         return sig;
     }
 
@@ -123,15 +124,17 @@ public:
      * Computes the odds ratio
      * @return odds ratio
      */
-    double oddsRatio() const
+    long double oddsRatio() const
     {
-        return ((double)aa/bb)/((double)cc/dd);
+        return (aa/bb)/(cc/dd);
     }
+
+private:
 
     std::string toString(std::string message = "") const
     {
-        long tmpa = a_d_switched ? dd : aa;
-        long tmpd = a_d_switched ? aa : dd;
+        long double tmpa = a_d_switched ? dd : aa;
+        long double tmpd = a_d_switched ? aa : dd;
         std::string ret = message;
         ret.append(message.size() > 0 ? ":\t" : "")
                 .append(std::to_string(tmpa)).append(", ")
@@ -146,23 +149,27 @@ public:
         ret.append("\n");
         return ret;
     }
-
-private:
-
     /**
     * Computes the probability of this exact table, not cumulative so it can't be used for significance
     **/
     long double configuration_pvalue(const long a, const long b, const long c, const long d) const
     {
-        return std::exp(k - lgamma((double)a + 1) - lgamma((double)b + 1) - lgamma((double)c + 1) - lgamma((double)d + 1));
+        return std::exp(k - lgamma(a + 1) - lgamma(b + 1) - lgamma(c + 1) - lgamma(d + 1));
     }
 
-    const long aa, bb, cc, dd; // the counts in a 2x2 contingency table
+    const long double aa, bb, cc, dd; // the counts in a 2x2 contingency table
     const long double k; // this is a constant used to compute p-values for each table configuration
     
     // a and d can be switched without affecting significance results and this
     // was done to avoid having to write special code when a is greater than d
     const bool a_d_switched; 
 };
+
+std::ostream& operator<< (std::ostream& out, CoOccurTest& test)
+{
+    out << test.toString();
+    return out;
+}
+
 }
 #endif	/* COOCCURRTEST_HXX */
