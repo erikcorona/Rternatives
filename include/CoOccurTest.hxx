@@ -23,7 +23,7 @@ class CoOccurTest
 {
 public:
     
-    friend std::ostream& operator<< (std::ostream &out, CoOccurTest &cPoint);
+    friend std::ostream& operator<< (std::ostream& out, CoOccurTest& test);
     
     /**
      * number of times category 1 occurs is a+c
