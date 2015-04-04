@@ -4,8 +4,8 @@
  *
  */
 
-#ifndef COOCCURRTEST_HXX
-#define	COOCCURRTEST_HXX
+#ifndef COOCCURTEST_HXX
+#define	COOCCURTEST_HXX
 
 #include <algorithm>
 #include <boost/math/special_functions/gamma.hpp>
@@ -15,13 +15,11 @@
 #include <vector>
 
 using namespace boost::math;
+
+namespace fastR{
 class CoOccurTest
 {
 public:
-
-    
-    
-    
     /**
      * number of times category 1 occurs is a+c
      * number of times category 2 occurs is a+b
@@ -166,5 +164,5 @@ private:
     // was done to avoid having to write special code when a is greater than d
     const bool a_d_switched; 
 };
-
+}
 #endif	/* COOCCURRTEST_HXX */
