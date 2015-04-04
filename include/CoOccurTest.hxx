@@ -9,11 +9,15 @@
 
 #include <boost/math/special_functions/gamma.hpp>
 
-using namespace boost::math;
-
 namespace fastR{
     
 constexpr long double percentChangeCutoff = 0.00000001;
+
+/**
+ * Specifies whether seeking probability of seeing lower or equal co-occurrence
+ * counts
+ */
+enum alternative { less, greater, two_tailed };
 
 class CoOccurTest
 {
@@ -52,11 +56,39 @@ public:
     }
 
     /**
+     * Computes a p-value for seeing an observaton as extreme or more extreme
+     * than this one.
+     * @param pvalue_type specify whether the p-value should be computed with
+     *                    respect to lower, greater, or two tailed side of the
+     *                    distribution 
+     * @return significance p-value
+     */
+    long double significance(alternative pvalue_type) const
+    {
+        if (pvalue_type == less)
+            return less_impl();
+        else if (pvalue_type == greater)
+            return greater_impl();
+        return two_tailed_impl();
+    }
+
+    /**
+     * Computes the odds ratio
+     * @return odds ratio
+     */
+    long double oddsRatio() const
+    {
+        return (aa/bb)/(cc/dd);
+    }
+
+private:
+
+    /**
      * Computes a two-tailed test
      * @return sum of all p-values that are equal than or lower than what is
      * observed among all possible configurations with fixed margins
      */
-    long double two_tailed() const
+    long double two_tailed_impl() const
     {
         long double sig{0}, ap;
         long a = aa, b = bb, c = cc, d = dd;
@@ -89,7 +121,7 @@ public:
      * @return sum of p-values representing an equal or smaller odds ratio
      * than observed
      */
-    long double less() const
+    long double less_impl() const
     {
         long double sig{0}, ap;
 
@@ -107,7 +139,7 @@ public:
      * @return sum of p-values representing an equal than or greater odds ratio
      * than observed
      */
-    long double greater() const
+    long double greater_impl() const
     {
         long double sig{0}, ap;
 
@@ -119,18 +151,7 @@ public:
            } while (ap / (sig - ap) > percentChangeCutoff && b >= 0 && c >= 0);
         return sig;
     }
-
-    /**
-     * Computes the odds ratio
-     * @return odds ratio
-     */
-    long double oddsRatio() const
-    {
-        return (aa/bb)/(cc/dd);
-    }
-
-private:
-
+    
     std::string toString(std::string message = "") const
     {
         long double tmpa = a_d_switched ? dd : aa;
@@ -142,9 +163,9 @@ private:
                 .append(std::to_string(cc)).append(", ")
                 .append(std::to_string(tmpd)).append(", ")
         .append("Configuration p-value: ").append(std::to_string(configuration_pvalue(aa,bb,cc,dd)))
-                .append("\tLess Significance: ").append(std::to_string(less()))
-                .append("\tGreater Significance: ").append(std::to_string(greater()))
-                .append("\tTwo-Tailed Significance: ").append(std::to_string(two_tailed()))
+                .append("\tLess Significance: ").append(std::to_string(significance(alternative::less)))
+                .append("\tGreater Significance: ").append(std::to_string(significance(alternative::greater)))
+                .append("\tTwo-Tailed Significance: ").append(std::to_string(significance(alternative::two_tailed)))
                 .append("\tOR: ").append(std::to_string(oddsRatio()));
         ret.append("\n");
         return ret;
@@ -171,5 +192,5 @@ std::ostream& operator<< (std::ostream& out, CoOccurTest& test)
     return out;
 }
 
-}
+} // namespace fastR closing bracket
 #endif	/* COOCCURRTEST_HXX */
