@@ -9,8 +9,8 @@
 
 #include <boost/math/special_functions/gamma.hpp>
 
-namespace fastR{
-    
+namespace fastR
+{
 constexpr long double percentChangeCutoff = 0.00000001;
 
 /**
