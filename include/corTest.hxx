@@ -5,6 +5,7 @@
 #ifndef RTERNATIVES_CORTEST_HXX
 #define RTERNATIVES_CORTEST_HXX
 
+#include <iostream>
 #include <vector>
 #include "utils.hxx"
 #include "Hypothesis.hxx"
