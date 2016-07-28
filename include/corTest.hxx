@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "utils.hxx"
+#include "Hypothesis.hxx"
 
 namespace fastR {
     class CorTest {
