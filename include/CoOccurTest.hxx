@@ -8,16 +8,12 @@
 #define	COOCCURTEST_HXX
 
 #include <boost/math/special_functions/gamma.hpp>
+#include "Hypothesis.hxx"
 
 namespace fastR
 {
 constexpr long double percentChangeCutoff = 0.00000001;
 
-/**
- * Specifies whether seeking probability of seeing lower or equal co-occurrence
- * counts
- */
-enum alternative { less, greater, two_tailed };
 
 class CoOccurTest
 {
