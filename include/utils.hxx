@@ -8,11 +8,15 @@
 #include <vector>
 #include <random>
 
-namespace numUtils {
-    std::vector<double> resample(std::vector<double> &values) {
-        std::vector<double> ret(values.size());
-        std::random_device r;
+namespace numUtils
+{
+    std::random_device r;
+
+    std::vector<double> resample(std::vector<double> &values)
+    {
         std::mt19937 eng{r()};
+
+        std::vector<double> ret(values.size());
         std::uniform_int_distribution<long> dist(0, values.size() - 1);
         for (int i = 0; i < values.size(); i++)
             ret[i] = values[dist(eng)];
