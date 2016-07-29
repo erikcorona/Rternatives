@@ -24,22 +24,47 @@ namespace fastR {
 
         double n_2()
         {
-            int ties{0};
+            return count_ties2(b);
+//            int ties{0};
+//            for(int i = 0; i < n; i++)
+//                for(int k = i+1; k < n; k++)
+//                    if (b[i] == b[k])
+//                        ties++;
+//            return ties;
+        }
+
+        int count_ties2(std::vector<double>& values)
+        {
+            std::unordered_map<double, int> freq;
             for(int i = 0; i < n; i++)
+                freq[values[i]]++;
+
+            int sum{0};
+            for(auto& cnts : freq)
+                sum += cnts.second * (cnts.second-1)/2.0;
+            return sum;
+        }
+
+        int count_ties(std::vector<double>& vals)
+        {
+            int ties{0};
+            for(int i = 0; i < vals.size(); i++)
                 for(int k = i+1; k < n; k++)
-                    if (b[i] == b[k])
+                    if (vals[i] == vals[k])
                         ties++;
             return ties;
         }
 
         double n_1()
         {
-            int ties{0};
-            for(int i = 0; i < n; i++)
-                for(int k = i+1; k < n; k++)
-                    if (a[i] == a[k])
-                        ties++;
-            return ties;
+            return count_ties2(a);
+
+//            int ties{0};
+//            for(int i = 0; i < n; i++)
+//                for(int k = i+1; k < n; k++)
+//                    if (a[i] == a[k])
+//                        ties++;
+//            return ties;
         }
 
         double concordant()
@@ -89,15 +114,14 @@ namespace fastR {
             }
 
             double b = tau_b();
-            int affirm{0};
-            int count{0};
+            affirm = 0;
+            count  = 0;
             while(affirm < 500 && count < 1000000)
             {
                 if (randomDraw().tau_b() > b)
                     affirm++;
                 count++;
             }
-            std::cout << affirm << " / " << count << std::endl;
             return (affirm+1.0)/(count+1.0);
         }
 
@@ -106,9 +130,17 @@ namespace fastR {
             a = std::move(m.a);
             b = std::move(m.b);
         }
+
+        void showPvalueStats()
+        {
+            std::cout << affirm << "/" << count << std::endl;
+        }
+
     private:
         std::vector<double> a, b;
         const unsigned long n;
+        int affirm;
+        int count;
     };
 }
 #endif //RTERNATIVES_CORTEST_HXX
