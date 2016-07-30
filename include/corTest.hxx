@@ -28,6 +28,20 @@ namespace fastR {
             return count_ties(b);
         }
 
+
+        std::vector<int> tiesVector(std::vector<double>& values)
+        {
+            std::unordered_map<double, int> freq;
+            for(int i = 0; i < n; i++)
+                freq[values[i]]++;
+
+            std::vector<int> ties;
+            for(auto& cnts : freq)
+                if(cnts.second > 1)
+                    ties.push_back(cnts.second);
+            return ties;
+        }
+
         int count_ties(std::vector<double>& values)
         {
             std::unordered_map<double, int> freq;
@@ -87,6 +101,65 @@ namespace fastR {
         {
             return concordant_minus_discordant()/
                     std::sqrt((n_0()-n_1())*(n_0()-n_2()));
+        }
+
+        double computeV2(std::vector<int>& tiesVector_a, std::vector<int>& tiesVector_b)
+        {
+            double v1{0};
+            for(int v : tiesVector_a)
+            {
+                double inner = v*(v-1)*(v-2);
+
+                for(int k : tiesVector_b)
+                    v1 += inner*k*(k-1)*(k-2)/(9*n*(n-1)*(n-2));
+            }
+            return v1;
+        }
+
+        double computeV1(std::vector<int>& tiesVector_a, std::vector<int>& tiesVector_b)
+        {
+            double v1{0};
+            for(int v : tiesVector_a)
+            {
+                double inner = v*(v-1);
+
+                for(int k : tiesVector_b)
+                    v1 += inner*k*(k-1)/(2*n*(n-1));
+            }
+            return v1;
+        }
+
+        double z_b()
+        {
+            std::vector<int> tiesA = tiesVector(a);
+            std::vector<int> tiesB = tiesVector(b);
+            double v1 = computeV1(tiesA,tiesB);
+            double v2 = computeV2(tiesA,tiesB);
+
+            double vt{0};
+            for(int val : tiesA)
+                vt += val*(val-1)*(2*val+5);
+
+            double vu{0};
+            for(int val : tiesVector(b))
+                vu += val*(val-1)*(2*val+5);
+
+            double v0 = n*(n-1)*(2*n+5);
+            double v = (v0-vt-vu)/(18+v1+v2);
+            return concordant_minus_discordant()/
+                    (std::sqrt(v));
+        }
+
+        double p_b(fastR::alternative alt)
+        {
+            double z = z_b();
+            double lesser = 0.5 * (1 + erf(z / std::sqrt(2)));
+            if(alt == greater)
+                return 1 - lesser;
+            else if(alt == less)
+                return lesser;
+            else
+                return std::min(lesser, 1 - lesser)*2;
         }
 
         CorTest randomDraw()

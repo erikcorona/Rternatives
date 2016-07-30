@@ -121,9 +121,14 @@ void test1()
                    0.48085, 0.437, 0.710581, 0.618709, 0.710517, 0.74155, 0.936652,
                    0.63299, 0.635177, 2.12727, 0.721802, 0.582728, 0.608441, 0.677712,
                    0.618709, 1.94691, 0.492905, 0.643347};
+
+//    a = {1,2,3,3,4,5,6,7,7,3,2,4,56,2};
+//    b = {11,22,13,33,64,15,2645,67,97,73,32,42,556,12};
     fastR::CorTest cor(a,b);
     std::cerr << cor.tau_b() << " / ";
-    std::cerr << cor.pValue(fastR::greater);
+//    std::cerr << cor.pValue(fastR::greater) << " / ";
+    std::cerr << cor.z_b() << " / " << cor.p_b(fastR::alternative::greater) << std::endl;
+
 }
 int main()
 {
