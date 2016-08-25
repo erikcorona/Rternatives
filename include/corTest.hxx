@@ -150,6 +150,11 @@ namespace fastR {
                     (std::sqrt(v));
         }
 
+        /**
+         * Probability of tau_b
+         * @param alt specify whether it's two-sided, one sided lower, or one sided greater
+         * @return p-value associated with tau_b
+         */
         double p_b(fastR::alternative alt)
         {
             double z = z_b();
