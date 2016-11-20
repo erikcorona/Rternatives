@@ -134,8 +134,10 @@ void test1()
 void testks()
 {
     auto res = kstest2sample (a,b,fastR::greater,false);
-
     std::cerr << res.statistic << " " << res.pValue << " " << res.method << std::endl;
+
+    auto res2 = kstest2sample2 (a.begin(), a.end(), b.begin(), b.end(), fastR::greater,false);
+    std::cerr << res2.statistic << " " << res2.pValue << " " << res2.method << std::endl;
 }
 
 int main()

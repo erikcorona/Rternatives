@@ -13,9 +13,7 @@
 #include <unordered_set>
 
 
-#ifndef M_1_SQRT_2PI
-#define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */
-#endif
+constexpr double M_1_SQRT_2PI{0.398942280401432677939946059934};
 
 bool hasDuplicates(std::vector<double> &v) {
     std::unordered_set<double> map;
@@ -212,19 +210,18 @@ struct KSVal
     fastR::alternative method;
 };
 
-//                                                          c("two.sided", "less", "greater")
+//                                                          c("two_sided", "less", "greater")
 // exact has to be set explicitly, not automated good rule is exact = x.size() * y.size() < 10000
 // two.sided = "two-sided", less = "the CDF of x lies below that of y", greater = "the CDF of x lies above that of y"
-KSVal kstest2sample (std::vector<double> &x, std::vector<double> &y, fastR::alternative method, bool exact)
+template<typename ITER>
+KSVal kstest2sample2 (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR::alternative method, const bool exact)
 {
-    double nx = x.size();
-    double ny = y.size();
+    double nx = std::distance(xbegin, xend);
+    double ny = std::distance(ybegin, yend);
 
-    double n = nx * ny/(nx + ny);
-
-    auto w = x;
-    w.reserve(x.size() + y.size());
-    w.insert(w.end(), y.begin(), y.end());
+    std::vector<double> w(xbegin, xend);
+    w.reserve(nx + ny);
+    w.insert(w.end(), ybegin, yend);
 
     std::vector<double> z(w.size());
 
@@ -249,6 +246,7 @@ KSVal kstest2sample (std::vector<double> &x, std::vector<double> &y, fastR::alte
         auto aDiff = diff(w);
 
         std::vector<double> newZ(0);
+        newZ.reserve(aDiff.size());
         for(int i = 0; i < aDiff.size(); i++)
             if(aDiff[i] != 0)
                 newZ.push_back(z[i]);
@@ -262,24 +260,26 @@ KSVal kstest2sample (std::vector<double> &x, std::vector<double> &y, fastR::alte
     switch(method)
     {
         case fastR::two_tailed : statistic =  maxAbsValue(z); break;
-        case fastR::greater  : statistic =  maxValue   (z); break;
-        case fastR::less     : statistic = -minValue   (z); break;
+        case fastR::greater    : statistic =  maxValue   (z); break;
+        case fastR::less       : statistic = -minValue   (z); break;
     }
 
     double PVAL = std::numeric_limits<double>::quiet_NaN();
     if (exact && method == fastR::two_tailed && !TIES)
         PVAL = 1 - psmirnov2x(statistic, (int) nx, (int)ny);
 
+    double n = (nx * ny)/(nx + ny);
     if (std::isnan(PVAL))
         PVAL = method == fastR::two_tailed ? 1 - pkstwo(sqrt(n) * statistic) : exp(-2 * n * statistic*statistic);
 
-    PVAL = 0.0 > PVAL ? 0.0 : PVAL; // max(0.0, pVAL)
-    PVAL = 1.0 < PVAL ? 1.0 : PVAL; // min(1.0, pVAL)
+    PVAL = std::min(std::max(PVAL,0.0),1.0);
 
     KSVal RVAL = {statistic, PVAL, method};
 
     return RVAL;
 }
+
+
 
 
 #endif //KS_KS_HXX
