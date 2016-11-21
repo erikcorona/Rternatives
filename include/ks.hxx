@@ -159,28 +159,26 @@ void pkstwo(int n, double *x, double tol)
  * the value for x < 0.2, and use the standard expansion otherwise.)
  *
  */
-    double new2, old, s, w, z;
-    int i, k, k_max;
-
-    k_max = (int) sqrt(2 - log(tol));
-
-    for(i = 0; i < n; i++) {
-        if(x[i] < 1) {
-            z = - (M_PI_2 * M_PI_4) / (x[i] * x[i]);
-            w = log(x[i]);
-            s = 0;
-            for(k = 1; k < k_max; k += 2) {
-                s += exp(k * k * z - w);
-            }
+    for(int i = 0; i < n; i++)
+    {
+        if(x[i] < 1)
+        {
+            const int k_max = (int) sqrt(2 - log(tol));
+            const double z = - (M_PI_2 * M_PI_4) / (x[i] * x[i]);
+            double s = 0;
+            for(int k = 1; k < k_max; k += 2)
+                s += exp(k * k * z - log(x[i]));
             x[i] = s / M_1_SQRT_2PI;
         }
-        else {
-            z = -2 * x[i] * x[i];
-            s = -1;
-            k = 1;
-            old = 0;
-            new2 = 1;
-            while(fabs(old - new2) > tol) {
+        else
+        {
+            const double z = -2 * x[i] * x[i];
+            double s = -1;
+            int k = 1;
+            double old = 0;
+            double new2 = 1;
+            while(fabs(old - new2) > tol)
+            {
                 old = new2;
                 new2 += 2 * s * exp(z * k * k);
                 s *= -1;
@@ -214,7 +212,7 @@ struct KSVal
 // exact has to be set explicitly, not automated good rule is exact = x.size() * y.size() < 10000
 // two.sided = "two-sided", less = "the CDF of x lies below that of y", greater = "the CDF of x lies above that of y"
 template<typename ITER>
-KSVal kstest2sample2 (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR::alternative method, const bool exact)
+KSVal kstest2sample (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR::alternative method, bool exact)
 {
     double nx = std::distance(xbegin, xend);
     double ny = std::distance(ybegin, yend);
@@ -231,10 +229,11 @@ KSVal kstest2sample2 (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fast
         z[i] = ranks[i] <= nx ? 1 / nx : -1 / ny;
     z = cumsum(z);
 
-    bool TIES = false;
+    bool ties = false;
     if (hasDuplicates(w))
     {
-        if (exact) {
+        if (exact)
+        {
             std::cerr <<  "cannot compute exact p-value with ties" << std::endl;
             exact = false;
         }
@@ -253,7 +252,7 @@ KSVal kstest2sample2 (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fast
         newZ.push_back(z[nx+ny-1]);
 
         z = std::move(newZ);
-        TIES = true;
+        ties = true;
     }
 
     double statistic;
@@ -265,7 +264,7 @@ KSVal kstest2sample2 (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fast
     }
 
     double PVAL = std::numeric_limits<double>::quiet_NaN();
-    if (exact && method == fastR::two_tailed && !TIES)
+    if (exact && method == fastR::two_tailed && !ties)
         PVAL = 1 - psmirnov2x(statistic, (int) nx, (int)ny);
 
     double n = (nx * ny)/(nx + ny);

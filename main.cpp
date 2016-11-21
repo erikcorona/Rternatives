@@ -63,7 +63,7 @@ std::vector<double> a = {0.625329, 0.635445, 0.602764, 1.00506, 0.672335, 0.7661
                          0.585657, 0.807198, 1.28786, 0.47058, 0.741744, 0.925825, 0.572142,
                          0.715252, 1.29233, 1.66127, 0.731975, 0.567163, 0.562975, 1.28786,
                          2.00165, 0.684564, 0.672335};
-std::vector<double> b = {0.781633, 0.634801, 0.796639, 0.687056, 0.643347, 0.707099,
+std::vector<double> bb = {0.781633, 0.634801, 0.796639, 0.687056, 0.643347, 0.707099,
                          0.632251, 0.556426, 0.461708, 0.804052, 0.514278, 1.13591, 0.656124,
                          0.619886, 0.759166, 0.820578, 0.634227, 0.683927, 0.826882, 0.767646,
                          0.562013, 0.689778, 0.616498, 0.761949, 0.629622, 0.657822, 1.21178,
@@ -124,7 +124,7 @@ void test1()
 {
 //    a = {1,2,3,3,4,5,6,7,7,3,2,4,56,2};
 //    b = {11,22,13,33,64,15,2645,67,97,73,32,42,556,12};
-    fastR::CorTest cor(a,b);
+    fastR::CorTest cor(a,bb);
     std::cerr << cor.tau_b() << " / ";
 //    std::cerr << cor.pValue(fastR::greater) << " / ";
     std::cerr << cor.z_b() << " / " << cor.p_b(fastR::alternative::greater) << std::endl;
@@ -133,10 +133,7 @@ void test1()
 
 void testks()
 {
-    auto res = kstest2sample (a,b,fastR::greater,false);
-    std::cerr << res.statistic << " " << res.pValue << " " << res.method << std::endl;
-
-    auto res2 = kstest2sample2 (a.begin(), a.end(), b.begin(), b.end(), fastR::greater,false);
+    auto res2 = kstest2sample (a.begin(), a.end(), bb.begin(), bb.end(), fastR::greater,false);
     std::cerr << res2.statistic << " " << res2.pValue << " " << res2.method << std::endl;
 }
 
