@@ -229,6 +229,9 @@ KSVal kstest2sample (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR
         z[i] = ranks[i] <= nx ? 1 / nx : -1 / ny;
     z = cumsum(z);
 
+    for(auto &v : z) std::cout << v << ", ";
+    std::cout << std::endl;
+
     bool ties = false;
     if (hasDuplicates(w))
     {
