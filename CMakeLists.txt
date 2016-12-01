@@ -13,8 +13,10 @@ if (APPLE OR WIN32)
     set(Boost_USE_STATIC_LIBS TRUE)
 endif()
 
-set(SOURCE_FILES main.cpp include/CorTest.hxx include/utils.hxx include/Hypothesis.hxx)
+set(SOURCE_FILES main.cpp include/CorTest.hxx include/utils.hxx include/Hypothesis.hxx include/CommonOperations.hxx)
 add_executable(Rternatives ${SOURCE_FILES})
+
+add_subdirectory(tests)
 
 #...
 target_link_libraries(Rternatives

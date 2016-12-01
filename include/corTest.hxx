@@ -68,7 +68,6 @@ namespace fastR {
                     diff += ((a[i] < a[k] && b[i] < b[k]) || (a[i] > a[k] && b[i] > b[k]));
                     diff -= ((a[i] < a[k] && b[i] > b[k]) || (a[i] > a[k] && b[i] < b[k]));
                 }
-
             return diff;
         }
 
@@ -105,6 +104,21 @@ namespace fastR {
 
         double computeV2(std::vector<int>& tiesVector_a, std::vector<int>& tiesVector_b)
         {
+            double v2{0};
+            for(int v : tiesVector_a)
+            {
+                double inner = v*(v-1)*(v-2);
+
+                double tmp{0};
+                for(int k : tiesVector_b)
+                    tmp += k*(k-1)*(k-2)/(9*n*(n-1)*(n-2));
+                v2 += inner*tmp;
+            }
+            return v2;
+        }
+
+        double computeV2OLD(std::vector<int>& tiesVector_a, std::vector<int>& tiesVector_b)
+        {
             double v1{0};
             for(int v : tiesVector_a)
             {
@@ -123,6 +137,21 @@ namespace fastR {
             {
                 double inner = v*(v-1);
 
+                double tmp{0};
+                for(int k : tiesVector_b)
+                    tmp += k*(k-1)/(2*n*(n-1));
+                v1 += inner*tmp;
+            }
+            return v1;
+        }
+
+        double computeV1OLD(std::vector<int>& tiesVector_a, std::vector<int>& tiesVector_b)
+        {
+            double v1{0};
+            for(int v : tiesVector_a)
+            {
+                double inner = v*(v-1);
+
                 for(int k : tiesVector_b)
                     v1 += inner*k*(k-1)/(2*n*(n-1));
             }
@@ -130,6 +159,28 @@ namespace fastR {
         }
 
         double z_b()
+        {
+            std::vector<int> tiesA = tiesVector(a);
+            std::vector<int> tiesB = tiesVector(b);
+            double v1 = computeV1(tiesA,tiesB);
+            double v2 = computeV2(tiesA,tiesB);
+
+            double vt{0};
+            for(int val : tiesA)
+                vt += val*(val-1)*(2*val+5);
+
+            double vu{0};
+            for(int val : tiesVector(b))
+                vu += val*(val-1)*(2*val+5);
+
+            double v0 = n*(n-1)*(2*n+5);
+            double v = (v0-vt-vu)/18+v1+v2;
+            std::cout << v1 << " tt " << v2 << std::endl;
+            return concordant_minus_discordant()/
+                   (std::sqrt(v));
+        }
+
+        double z_bOLD()
         {
             std::vector<int> tiesA = tiesVector(a);
             std::vector<int> tiesB = tiesVector(b);
@@ -202,7 +253,7 @@ namespace fastR {
 
         void showPvalueStats()
         {
-            std::cout << affirm << "/" << count << std::endl;
+            std::cout << "affirm/count:\t" << affirm << "/" << count << std::endl;
         }
 
     private:

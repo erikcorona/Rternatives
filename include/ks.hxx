@@ -204,7 +204,7 @@ double pkstwo (double x, double tol = 1e-06)
 
 struct KSVal
 {
-    double statistic, pValue;
+    double D, pValue;
     fastR::alternative method;
 };
 
@@ -228,9 +228,6 @@ KSVal kstest2sample (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR
     for(int i = 0; i < ranks.size(); i++)
         z[i] = ranks[i] <= nx ? 1 / nx : -1 / ny;
     z = cumsum(z);
-
-    for(auto &v : z) std::cout << v << ", ";
-    std::cout << std::endl;
 
     bool ties = false;
     if (hasDuplicates(w))

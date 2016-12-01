@@ -12,5 +12,6 @@ namespace fastR
      * counts
      */
     enum alternative { less, greater, two_tailed };
+    enum TiesMethod {average,first,random,max,min};
 }
 #endif //RTERNATIVES_HYPOTHESIS_HXX
