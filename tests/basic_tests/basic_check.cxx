@@ -125,44 +125,47 @@ std::vector<double> b = {0.781633, 0.634801, 0.796639, 0.687056, 0.643347, 0.707
                           0.63299, 0.635177, 2.12727, 0.721802, 0.582728, 0.608441, 0.677712,
                           0.618709, 1.94691, 0.492905, 0.643347};
 
+
 void testResult(std::vector<double> &a, std::vector<double> &b, double d, double p, fastR::alternative method)
 {
     auto res = kstest2sample(a.begin(),a.end(),b.begin(),b.end(),method,true);
 
-    EXPECT_NEAR(res.D     ,d,0.0000001  );
+    EXPECT_NEAR(res.D     ,d,0.0000001);
     EXPECT_NEAR(res.pValue,p,0.0000001);
 }
-
-TEST(MESSAGES, test_rank)
-{
-    std::vector<double> rankMe    = {1,2,2,2,3};
-
-    std::vector<double> rankMeMin = {1,2,2,2,5};
-    std::vector<double> rankMeMax = {1,4,4,4,5};
-    std::vector<double> rankMeAvg = {1,3,3,3,5};
-
-    auto ranks = fastR::rank(rankMe, fastR::TiesMethod::min);
-
-    int i = 0;
-    for(auto &v : fastR::rank(rankMe, fastR::TiesMethod::min))
-        EXPECT_DOUBLE_EQ(v, rankMeMin[i++]);
-
-    i = 0;
-    for(auto &v : fastR::rank(rankMe, fastR::TiesMethod::max))
-        EXPECT_DOUBLE_EQ(v, rankMeMax[i++]);
-
-    i = 0;
-    for(auto &v : fastR::rank(rankMe, fastR::TiesMethod::average))
-        EXPECT_DOUBLE_EQ(v, rankMeAvg[i++]);
-
-
-    std::vector<double> r2{1,2,2};
-    std::vector<double> r2Exp = {1,2.5,2.5};
-    i = 0;
-    for(auto &v : fastR::rank(r2, fastR::TiesMethod::average))
-        EXPECT_DOUBLE_EQ(v, r2Exp[i++]);
-}
-
+//
+//
+//
+//TEST(MESSAGES, test_rank)
+//{
+//    std::vector<double> rankMe    = {1,2,2,2,3};
+//
+//    std::vector<double> rankMeMin = {1,2,2,2,5};
+//    std::vector<double> rankMeMax = {1,4,4,4,5};
+//    std::vector<double> rankMeAvg = {1,3,3,3,5};
+//
+//    auto ranks = fastR::rank(rankMe, fastR::TiesMethod::min);
+//
+//    int i = 0;
+//    for(auto &v : fastR::rank(rankMe, fastR::TiesMethod::min))
+//        EXPECT_DOUBLE_EQ(v, rankMeMin[i++]);
+//
+//    i = 0;
+//    for(auto &v : fastR::rank(rankMe, fastR::TiesMethod::max))
+//        EXPECT_DOUBLE_EQ(v, rankMeMax[i++]);
+//
+//    i = 0;
+//    for(auto &v : fastR::rank(rankMe, fastR::TiesMethod::average))
+//        EXPECT_DOUBLE_EQ(v, rankMeAvg[i++]);
+//
+//
+//    std::vector<double> r2{1,2,2};
+//    std::vector<double> r2Exp = {1,2.5,2.5};
+//    i = 0;
+//    for(auto &v : fastR::rank(r2, fastR::TiesMethod::average))
+//        EXPECT_DOUBLE_EQ(v, r2Exp[i++]);
+//}
+//
 TEST(MESSAGES, test_mean)
 {
     testResult(aaa,bbb,0.5625,0.06843349, fastR::alternative::two_tailed);
@@ -172,5 +175,10 @@ TEST(MESSAGES, test_mean)
     testResult(a,b,0.06598985, 0.3575778, fastR::alternative::two_tailed);
     testResult(a,b,0.03807107, 0.5649229, fastR::alternative::greater   );
     testResult(a,b,0.06598985, 0.1798313, fastR::alternative::less      );
+}
 
+TEST(MESSAGES, ksboot)
+{
+    double p = ksboot(aaa,bbb,100000,fastR::two_tailed);
+    EXPECT_NEAR(p,0.02362,0.001);
 }

@@ -15,6 +15,14 @@
 
 constexpr double M_1_SQRT_2PI{0.398942280401432677939946059934};
 
+
+
+
+
+
+
+
+
 bool hasDuplicates(std::vector<double> &v) {
     std::unordered_set<double> map;
     for (double &num : v)
@@ -40,7 +48,8 @@ std::vector<int> order(std::vector<double> &array)
 
     std::sort(nums.begin(), nums.end(), [&](auto &a, auto &b){ return a.first < b.first; });
 
-    std::vector<int> pos(array.size());
+    std::vector<int> pos;
+    pos.resize(array.size());
 
     for(int i = 0; i < array.size();i++)
         pos[i] = nums[i].second;
@@ -58,7 +67,8 @@ std::vector<double> cumsum(std::vector<double> &x)
 
 std::vector<double> diff(std::vector<double> &x)
 {
-    std::vector<double> diffs(x.size()-1);
+    std::vector<double> diffs;
+    diffs.resize(x.size()-1);
 
     for(int i = 1; i < x.size(); i++)
         diffs[i-1] = x[i] - x[i-1];
@@ -208,6 +218,38 @@ struct KSVal
     fastR::alternative method;
 };
 
+
+/*double ksFast (std::vector<double> &x, std::vector<double> &y)
+{
+    auto nx = x.size();
+    auto ny = y.size();
+    std::vector<double> w;
+    w.reserve(nx+ny);
+    w.insert(w.end(),nx.begin(),nx.end());
+    w.insert(w.end(),ny.begin(),ny.end());
+
+    std::vector<double> z(w.size());
+
+    auto ranks = order(w);
+    for(int i = 0; i < ranks.size(); i++)
+        z[i] = ranks[i] <= nx ? 1 / nx : -1 / ny;
+    z = cumsum(z);
+
+    std::sort(w.begin(), w.end());
+
+    auto aDiff = diff(w);
+
+    std::vector<double> newZ(0);
+    newZ.reserve(aDiff.size());
+    for(int i = 0; i < aDiff.size(); i++)
+        if(aDiff[i] != 0)
+            newZ.push_back(z[i]);
+    newZ.push_back(z[nx+ny-1]);
+
+    z = std::move(newZ);
+    return(max(abs(z)));
+}*/
+
 //                                                          c("two_sided", "less", "greater")
 // exact has to be set explicitly, not automated good rule is exact = x.size() * y.size() < 10000
 // two.sided = "two-sided", less = "the CDF of x lies below that of y", greater = "the CDF of x lies above that of y"
@@ -217,8 +259,9 @@ KSVal kstest2sample (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR
     double nx = std::distance(xbegin, xend);
     double ny = std::distance(ybegin, yend);
 
-    std::vector<double> w(xbegin, xend);
+    std::vector<double> w;
     w.reserve(nx + ny);
+    w.insert(w.end(),xbegin, xend);
     w.insert(w.end(), ybegin, yend);
 
     std::vector<double> z(w.size());
@@ -234,7 +277,7 @@ KSVal kstest2sample (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR
     {
         if (exact)
         {
-            std::cerr <<  "cannot compute exact p-value with ties" << std::endl;
+//            std::cerr <<  "cannot compute exact p-value with ties" << std::endl;
             exact = false;
         }
         else
@@ -244,7 +287,7 @@ KSVal kstest2sample (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR
 
         auto aDiff = diff(w);
 
-        std::vector<double> newZ(0);
+        std::vector<double> newZ;
         newZ.reserve(aDiff.size());
         for(int i = 0; i < aDiff.size(); i++)
             if(aDiff[i] != 0)
@@ -278,7 +321,56 @@ KSVal kstest2sample (ITER xbegin, ITER xend, ITER ybegin, ITER yend, const fastR
     return RVAL;
 }
 
+double ksboot (std::vector<double> &Tr, std::vector<double> &Co, unsigned long nboots, fastR::alternative method)
+{
+    double tol = sqrt(std::numeric_limits<double>::epsilon());
+    std::vector<double> w;
+    w.reserve(Co.size() + Tr.size());
+    w.insert(w.end(), Tr.begin(),Tr.end());
+    w.insert(w.end(), Co.begin(),Co.end());
 
+    auto obs = w.size();
+    auto nx = Tr.size();
+    int bbcount = 0;
+    if (nboots < 10)
+    {
+        nboots = 10;
+        std::cerr << "At least 10 'nboots' must be run; seting 'nboots' to 10" << std::endl;
+    }
+
+    if (nboots < 500)
+        std::cout << "For publication quality p-values it is recommended that 'nboots'\n be set equal to at least 500 (preferably 1000)" << std::endl;
+
+    auto fsks = kstest2sample(Tr.begin(), Tr.end(), Co.begin(), Co.end(),method,true);
+
+    std::vector<double> tmp(obs);
+    for(int i = 0; i < obs; i++)
+        tmp[i] = i;
+
+    std::vector<double> X1tmp(nx);
+    std::vector<double> X2tmp(obs-nx);
+    for (unsigned long bb = 1; bb <= nboots; bb++)
+    {
+        auto sindx = fastR::sample(tmp, obs);
+
+        for(int i = 0; i < nx; i++)
+            X1tmp[i] = w[sindx[i]];
+
+        for(int i = nx; i < obs;i++)
+            X2tmp[i-nx] = w[sindx[i]];
+
+        double D = kstest2sample(X1tmp.begin(), X1tmp.end(), X2tmp.begin(), X2tmp.end(),method,true).D;
+
+//        for(int i = 0; i < X1tmp.size(); i++) std::cout << X1tmp[i] << ", "; std::cout << std::endl;
+//        for(int i = 0; i < X2tmp.size(); i++) std::cout << X2tmp[i] << ", "; std::cout << std::endl;
+//        std::cout << D << " vs " << fsks.D << std::endl;
+        if (D >= (fsks.D - tol))
+            bbcount++;
+    }
+
+    std::cout << bbcount << " " << nboots << std::endl;
+    return static_cast<double>(bbcount)/nboots;
+}
 
 
 #endif //KS_KS_HXX

@@ -8,8 +8,14 @@
 #include <vector>
 #include <iostream>
 #include "Hypothesis.hxx"
+#include <random>
 
-namespace fastR {
+namespace fastR
+{
+
+
+
+
 
 #define sort2_with_index \
     for (h = sincs[t]; t < 16; h = sincs[++t]) { \
@@ -55,7 +61,32 @@ namespace fastR {
         }
     }
 
-    static int equal(int i, int j, std::vector<double> &x)
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    /**
+     * sample takes a sample of the specified size from the elements of x using either with or without replacement.
+     * @param x  A vector of one or more elements from which to choose
+     * @param size a non-negative integer giving the number of items to choose
+     * @param replace Should sampling be with replacement?, currently it's with replacement @todo add replacement option
+     */
+    std::vector<double> sample (std::vector<double> &x, unsigned long size)
+    {
+        std::uniform_int_distribution<unsigned long> dis(0, x.size()-1);
+        std::vector<double> res;
+        res.resize(size);
+
+        for(int i = 0; i < size; i++)
+        {
+            unsigned long index = dis(gen);
+            res[i] = x[index];
+        }
+
+        return res;
+    }
+
+
+    int equal(int i, int j, std::vector<double> &x)
     {
         return x[i] == x[j];
     }
