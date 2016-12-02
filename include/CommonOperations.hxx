@@ -13,7 +13,8 @@
 namespace fastR
 {
 
-
+    std::random_device rd;
+    std::mt19937 gen(rd());
 
 
 
@@ -62,8 +63,7 @@ namespace fastR
     }
 
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+
     /**
      * sample takes a sample of the specified size from the elements of x using either with or without replacement.
      * @param x  A vector of one or more elements from which to choose
